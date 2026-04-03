@@ -27,7 +27,7 @@ func (h *Handler) Compute(c *echo.Context) error {
 	hp := models.InitRasDepthJsonProvider(data)
 	sp := structureprovider.InitNSISP()
 	bw := bufio.NewWriter(c.Response())
-	jrw := resultswriters.InitJsonResultsWriter(bw)
+	jrw := resultswriters.InitGeoJsonResultsWriter(bw)
 	compute.StreamAbstract(hp, sp, jrw)
 	jrw.Close()
 	bw.Flush()
