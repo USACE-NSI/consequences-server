@@ -5,12 +5,14 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
+	"github.com/usace-nsi/consequences-server/config"
 	"github.com/usace-nsi/consequences-server/handlers"
 )
 
 const apiprefix = "/consequences"
 
 func main() {
+	config := config.GetConfig()
 	e := echo.New()
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB
@@ -20,7 +22,7 @@ func main() {
 
 	e.GET(apiprefix+"/version", handler.Version)
 	e.POST(apiprefix+"/compute", handler.Compute)
-	if err := e.Start(":8080"); err != nil {
+	if err := e.Start(":" + config.Port); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }
