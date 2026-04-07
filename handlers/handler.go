@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"bufio"
 	"net/http"
 
 	"github.com/USACE/go-consequences/compute"
@@ -26,10 +25,9 @@ func (h *Handler) Compute(c *echo.Context) error {
 	}
 	hp := models.InitRasDepthJsonProvider(data)
 	sp := structureprovider.InitNSISP()
-	bw := bufio.NewWriter(c.Response())
-	jrw := resultswriters.InitGeoJsonResultsWriter(bw)
+	jrw := resultswriters.InitGeoJsonResultsWriter(c.Response())
+	defer jrw.Close()
 	compute.StreamAbstract(hp, sp, jrw)
-	jrw.Close()
-	bw.Flush()
+
 	return nil
 }
