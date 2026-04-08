@@ -2,7 +2,7 @@ echo "Sending request to http://localhost:8080/compute..."
 
 # Run the curl command
 # -i is added to show the HTTP response headers (Status 200, etc.)
-curl -i -X POST http://localhost:8080/consequences/compute \
+curl -i -X POST http://localhost:8080/compute \
   -H "Content-Type: application/json" \
   -d @data.json
 

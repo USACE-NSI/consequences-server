@@ -1,18 +1,24 @@
-# Stage 1: Build on Alpine-small GDAL base
+# Stage 1: Build - Use the production base image as the builder to ensure library parity
 FROM ghcr.io/osgeo/gdal:alpine-small-3.8.3 AS builder
 
-# Install Go and build dependencies via apk
+# Install build tools and manual Go 1.25.8
 RUN apk add --no-cache \
-    go \
     build-base \
     pkgconf \
     gdal-dev \
     git \
-    tzdata
+    wget \
+    ca-certificates
 
-# Setup Go environment
-ENV GOPATH=/src/go
-ENV PATH=$GOPATH/bin:/usr/lib/go/bin:$PATH
+# Manually install Go 1.25.8
+ENV GO_VERSION=1.25.8
+RUN wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
+    rm go${GO_VERSION}.linux-amd64.tar.gz
+
+# Set Go paths
+ENV GOROOT=/usr/local/go
+ENV PATH=$GOROOT/bin:$PATH
 
 WORKDIR /app
 
