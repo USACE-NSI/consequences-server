@@ -12,12 +12,16 @@ import (
 
 type Handler struct {
 }
+type Status struct {
+	Status string `json:"status"`
+}
 
 func (h *Handler) Version(c *echo.Context) error {
 	return c.String(http.StatusOK, "consequences-server:v1.0.0")
 }
 func (h *Handler) Status(c *echo.Context) error {
-	return c.JSON(http.StatusOK, "HEALTHY")
+	s := Status{Status: "RUNNING"}
+	return c.JSON(http.StatusOK, s)
 }
 
 func (h *Handler) Compute(c *echo.Context) error {
