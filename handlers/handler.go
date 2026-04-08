@@ -13,14 +13,14 @@ import (
 type Handler struct {
 }
 type Status struct {
-	Status string `json:"status"`
+	State string `json:"state"`
 }
 
 func (h *Handler) Version(c *echo.Context) error {
 	return c.String(http.StatusOK, "consequences-server:v1.0.0")
 }
 func (h *Handler) Status(c *echo.Context) error {
-	s := Status{Status: "RUNNING"}
+	s := Status{State: "RUNNING"}
 	return c.JSON(http.StatusOK, s)
 }
 
