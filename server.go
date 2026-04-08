@@ -9,7 +9,7 @@ import (
 	"github.com/usace-nsi/consequences-server/handlers"
 )
 
-const apiprefix = "/consequences"
+const apiprefix = ""
 
 func main() {
 	config := config.GetConfig()
@@ -21,6 +21,7 @@ func main() {
 	handler := handlers.Handler{}
 
 	e.GET(apiprefix+"/version", handler.Version)
+	e.GET(apiprefix+"/status", handler.Version)
 	e.POST(apiprefix+"/compute", handler.Compute)
 	if err := e.Start(":" + config.Port); err != nil {
 		log.Fatalf("Server error: %v", err)

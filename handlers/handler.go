@@ -14,7 +14,10 @@ type Handler struct {
 }
 
 func (h *Handler) Version(c *echo.Context) error {
-	return c.String(http.StatusOK, "consequences-server:v0.0.1")
+	return c.String(http.StatusOK, "consequences-server:v1.0.0")
+}
+func (h *Handler) Status(c *echo.Context) error {
+	return c.String(http.StatusOK, "HEALTHY")
 }
 
 func (h *Handler) Compute(c *echo.Context) error {
