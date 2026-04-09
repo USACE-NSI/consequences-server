@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"math"
 
 	"github.com/USACE/go-consequences/geography"
 	"github.com/USACE/go-consequences/hazardproviders"
@@ -10,42 +9,23 @@ import (
 )
 
 type RasDepthJsonProvider struct {
-	data    []RasDepths
+	data    []DepthEvent
 	bbox    geography.BBox
 	Process hazardproviders.HazardFunction
 }
 
-func InitRasDepthJsonProvider(depths []RasDepths) *RasDepthJsonProvider {
-	if len(depths) == 0 {
+func InitRasDepthJsonProvider(input ComputeInput) *RasDepthJsonProvider {
+	if len(input.HazardData) == 0 {
 		return &RasDepthJsonProvider{
-			data: depths,
+			data: input.HazardData,
 			bbox: geography.BBox{Bbox: []float64{0, 0, 0, 0}},
 		}
 	}
-
-	minX, minY := math.MaxFloat64, math.MaxFloat64
-	maxX, maxY := -math.MaxFloat64, -math.MaxFloat64
-
-	for _, d := range depths {
-		if d.X < minX {
-			minX = d.X
-		}
-		if d.X > maxX {
-			maxX = d.X
-		}
-		if d.Y < minY {
-			minY = d.Y
-		}
-		if d.Y > maxY {
-			maxY = d.Y
-		}
-	}
-
 	return &RasDepthJsonProvider{
-		data: depths,
+		data: input.HazardData,
 		bbox: geography.BBox{
 			// Order matches your Contains() logic: [0]=minX, [1]=minY, [2]=maxX, [3]=maxY
-			Bbox: []float64{minX, minY, maxX, maxY},
+			Bbox: input.BoundingBox,
 		},
 		Process: hazardproviders.DepthHazardFunction(),
 	}
@@ -54,16 +34,10 @@ func InitRasDepthJsonProvider(depths []RasDepths) *RasDepthJsonProvider {
 
 // Hazard satisfies the HazardProvider interface
 func (p *RasDepthJsonProvider) Hazard(l geography.Location) (hazards.HazardEvent, error) {
-	// Optional: Check BBox first to fail fast
-	if !p.bbox.Contains(l) {
-		return nil, errors.New("location outside of provider bounds")
-	}
 
 	for _, d := range p.data {
-		// Using a small epsilon for float comparison if necessary,
-		// or direct comparison if coordinates are exact matches.
 		var h hazards.HazardEvent
-		if d.X == l.X && d.Y == l.Y {
+		if d.FD_ID == l.SRID { //use the location SRID to carry the structure fdid to ensure unique matching
 			hd := hazards.HazardData{
 				Depth: d.Depth,
 			}
@@ -73,6 +47,7 @@ func (p *RasDepthJsonProvider) Hazard(l geography.Location) (hazards.HazardEvent
 			}
 			return h, nil
 		}
+
 	}
 	return nil, errors.New("no hazard found at this location")
 }

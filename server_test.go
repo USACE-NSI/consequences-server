@@ -23,7 +23,7 @@ func TestComputeEndpoint(t *testing.T) {
 	ts := httptest.NewServer(e)
 	defer ts.Close()
 
-	body, err := os.ReadFile("/workspaces/consequences-server/data.json")
+	body, err := os.ReadFile("/workspaces/consequences-server/barryessa.json")
 	if err != nil {
 		t.Fatalf("Could not read data.json: %v", err)
 	}
@@ -45,7 +45,12 @@ func TestComputeEndpoint(t *testing.T) {
 		t.Error("Expected GeoJSON response body, but got empty response")
 	}
 
-	fmt.Printf("Response received: %s", string(respBody[:200])) // Log first 50 chars
+	err = os.WriteFile("./results.json", respBody, 0644)
+	if err != nil {
+		t.Fatalf("Failed to write to ./results.json: %v", err)
+	}
+
+	fmt.Println("Response successfully saved to /results.json")
 }
 
 func BenchmarkComputeEndpoint_Stress(b *testing.B) {
@@ -72,10 +77,7 @@ func BenchmarkComputeEndpoint_Stress(b *testing.B) {
 				b.Errorf("Request failed: %v", err)
 				continue
 			}
-
-			// Always drain and close the body to avoid leaking file descriptors
-			io.Copy(io.Discard, resp.Body)
-			resp.Body.Close()
+			defer resp.Body.Close()
 
 			if resp.StatusCode != http.StatusOK {
 				b.Errorf("Expected 200, got %d", resp.StatusCode)
@@ -89,9 +91,9 @@ func BenchmarkComputeEndpoint_Stress(b *testing.B) {
 func BenchmarkRemoteComputeStress(b *testing.B) {
 	// 1. Point to the real remote URL
 	targetURL := "https://consequences.hecdev.net/compute"
-
+	b.SetParallelism(10)
 	// 2. Pre-load your data.json once
-	body, err := os.ReadFile("/workspaces/consequences-server/data.json")
+	body, err := os.ReadFile("/workspaces/consequences-server/barryessa.json")
 	if err != nil {
 		b.Fatalf("Could not read data.json: %v", err)
 	}
@@ -115,6 +117,8 @@ func BenchmarkRemoteComputeStress(b *testing.B) {
 			if resp.StatusCode != http.StatusOK {
 				b.Errorf("Remote returned non-200: %d", resp.StatusCode)
 			}
+			//respBody, _ := io.ReadAll(resp.Body)
+			//fmt.Printf("Response received: %s\n", string(respBody))
 		}
 	})
 }
